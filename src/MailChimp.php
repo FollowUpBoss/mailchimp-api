@@ -26,6 +26,9 @@ class MailChimp
     private $last_response      = array();
     private $last_request       = array();
 
+    public $errorCode = '';
+    public $errorMessage = '';
+
     /**
      * Create a new instance
      * @param string $api_key Your MailChimp API key
@@ -192,6 +195,9 @@ class MailChimp
             'timeout' => $timeout,
         );
 
+        $this->errorCode = '';
+        $this->errorMessage = '';
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -252,7 +258,7 @@ class MailChimp
 
         return $formattedResponse;
     }
-    
+
     /**
      * @return string The url to the API endpoint
      */
@@ -305,11 +311,18 @@ class MailChimp
         }
 
         if (isset($formattedResponse['detail'])) {
+            $this->errorCode = $formattedResponse['status'];
+            $this->errorMessage = $formattedResponse['detail'];
+
             $this->last_error = sprintf('%d: %s', $formattedResponse['status'], $formattedResponse['detail']);
             return false;
         }
 
         $this->last_error = 'Unknown error, call getLastResponse() to find out what happened.';
+
+        $this->errorCode = 'UNKNOWN';
+        $this->errorMessage = 'Unknown error, call getLastResponse() to find out what happened.';
+
         return false;
     }
 
